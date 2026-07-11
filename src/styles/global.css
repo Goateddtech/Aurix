@@ -90,9 +90,9 @@ sup {
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(120% 90% at 50% 10%, rgba(242, 177, 77, 0.06), transparent 55%),
-    radial-gradient(90% 75% at 80% 85%, rgba(192, 133, 82, 0.05), transparent 60%),
-    var(--bg);
+    radial-gradient(120% 90% at 50% 24%, rgba(243, 238, 228, 0.05), transparent 55%),
+    radial-gradient(100% 80% at 50% 100%, rgba(0, 0, 0, 0.45), transparent 62%),
+    #0a0a0b;
 }
 
 .liquid-glass canvas {
@@ -404,18 +404,39 @@ section[id] {
   will-change: opacity, transform;
 }
 
-/* centered via negative margin — JS owns the transform property.
-   Sits above the can, never over it. */
+/* Stage A idle text flanks the can (Frio-style): vertically centered, pinned
+   to the two margins, never overlapping the product. JS owns the transform
+   (fade); margin-top does the vertical centering so they don't fight. */
 .hero-panel-a {
-  left: 50%;
-  top: calc(76px + 3vh);
-  text-align: center;
-  width: min(92vw, 52rem);
-  margin-left: calc(min(92vw, 52rem) / -2);
+  top: 50%;
+}
+
+.hero-panel-left {
+  left: max(6vw, calc((100vw - 1200px) / 2 + 1rem));
+  margin-top: -4.4rem;
+  text-align: left;
+  width: min(40vw, 27rem);
+}
+
+.hero-panel-right {
+  right: max(6vw, calc((100vw - 1200px) / 2 + 1rem));
+  margin-top: -1.5rem;
+  text-align: right;
+  width: min(26vw, 18rem);
 }
 
 .hero-panel-a h1 {
-  font-size: clamp(2.3rem, 4.6vw, 4rem);
+  font-size: clamp(2.7rem, 5.4vw, 4.8rem);
+  line-height: 0.98;
+}
+
+.hero-side-label {
+  margin-top: 1.3rem;
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--copper);
 }
 
 /* SVG filter def carrier — occupies no space, paints nothing */
@@ -1400,6 +1421,99 @@ section[id] {
   }
 }
 
+/* ---------- rolling cans (scroll-driven) ---------- */
+
+.rollcans {
+  position: relative;
+  height: 240vh;
+}
+
+.rollcans-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 13vh;
+}
+
+.rollcans-head {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  max-width: 42rem;
+  padding: 0 1.5rem;
+}
+
+.rollcans-head h2 {
+  margin: 0.7rem 0 1rem;
+}
+
+.rollcans-head .section-intro {
+  margin: 0 auto;
+}
+
+.rollcans-floor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 11vh;
+  height: 260px;
+  display: flex;
+  align-items: flex-end;
+}
+
+/* floor line + soft reflected glow under the rolling cans */
+.rollcans-floor::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 8px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(192, 133, 82, 0.32), transparent);
+}
+
+.rollcans-row {
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(1.4rem, 2.6vw, 2.6rem);
+  padding: 0 9vw;
+  width: max-content;
+  will-change: transform;
+}
+
+.rollcans-can {
+  flex: 0 0 auto;
+  transform: rotate(calc(var(--roll, 0deg) + var(--i, 0) * var(--stagger, 0deg)));
+  transform-origin: 50% 58%;
+  filter: drop-shadow(0 16px 22px rgba(0, 0, 0, 0.6));
+}
+
+.rc-can {
+  display: block;
+  width: clamp(62px, 8vw, 106px);
+  height: auto;
+}
+
+@media (max-width: 640px) {
+  .rollcans {
+    height: 200vh;
+  }
+  .rollcans-floor {
+    bottom: 8vh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rollcans-can {
+    transform: none;
+  }
+}
+
 /* ---------- grain overlay ---------- */
 
 .grain {
@@ -1523,8 +1637,16 @@ section[id] {
     width: 86vw;
     text-align: left;
   }
-  .hero-panel-a {
-    top: calc(64px + 2vh);
+  .hero-panel-left {
+    left: 6vw;
+    right: 6vw;
+    top: calc(66px + 2vh);
+    margin-top: 0;
+    width: auto;
+    text-align: center;
+  }
+  .hero-panel-right {
+    display: none;
   }
   .capture {
     flex-direction: column;

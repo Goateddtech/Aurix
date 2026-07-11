@@ -12,7 +12,6 @@ export default function Footer() {
         <div className="footer-links">
           <a href="#drink">The Drink</a>
           <a href="#ritual">The Ritual</a>
-          <a href="#ingredients">Ingredients</a>
           <a href="#stockists">Stockists</a>
         </div>
         <div className="footer-links footer-social">

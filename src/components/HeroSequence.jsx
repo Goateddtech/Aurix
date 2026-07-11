@@ -56,6 +56,7 @@ function HeroInteractive() {
   const pb = useRef(null)
   const pc = useRef(null)
   const pd = useRef(null)
+  const paR = useRef(null)
   const cue = useRef(null)
   const disp = useRef(null)
   const [ready, setReady] = useState(false)
@@ -89,7 +90,9 @@ function HeroInteractive() {
     }
     const update = (p) => {
       heroScroll.p = p
-      apply(pa.current, band(p, -2, -1, 0.03, 0.11))
+      const aFade = band(p, -2, -1, 0.03, 0.11)
+      apply(pa.current, aFade)
+      apply(paR.current, aFade)
       apply(pb.current, band(p, 0.27, 0.35, 0.46, 0.54))
       apply(pc.current, band(p, 0.5, 0.57, 0.67, 0.74))
       const dO = band(p, 0.9, 0.965, 9, 10)
@@ -169,13 +172,20 @@ function HeroInteractive() {
         )}
         <div className="hero-vignette" />
 
-        {/* Stage A — idle hero (title sits above the product, never over it) */}
-        <div className="hero-panel hero-panel-a" ref={pa}>
+        {/* Stage A — idle hero: text flanks the can (never over the product) */}
+        <div className="hero-panel hero-panel-a hero-panel-left" ref={pa}>
           <p className="kicker">Elderflower · Jalapeño · Citrus</p>
-          <h1 className="hero-h1-warp">Considered Indulgence.</h1>
+          <h1 className="hero-h1-warp">
+            Considered
+            <br />
+            Indulgence.
+          </h1>
+        </div>
+        <div className="hero-panel hero-panel-a hero-panel-right" ref={paR}>
           <p className="sub">
             Marine collagen and vitamin C, in a can built to be looked at twice.
           </p>
+          <p className="hero-side-label">Botanical apéritif · 0.0% ABV</p>
         </div>
         <div className="hero-cue" ref={cue}>
           <ScrollCue />

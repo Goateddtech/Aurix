@@ -2,7 +2,7 @@ import LiquidGlass from './components/LiquidGlass'
 import Nav from './components/Nav'
 import HeroSequence from './components/HeroSequence'
 import Marquee from './components/Marquee'
-import Explainer from './components/Explainer'
+import RollingCans from './components/RollingCans'
 import Nutrition from './components/Nutrition'
 import CanFloat from './components/CanFloat'
 import WaveDivider from './components/WaveDivider'
@@ -26,7 +26,7 @@ export default function App() {
       <main>
         {!noHero && <HeroSequence />}
         <Marquee />
-        <Explainer />
+        <RollingCans />
         <Nutrition />
         <CanFloat />
         <SocialProof />
