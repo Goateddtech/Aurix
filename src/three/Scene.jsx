@@ -136,35 +136,44 @@ export default function Scene({ onReady }) {
       roughness: 0.35,
       transparent: true,
     })
+    // real glass: full transmission refracts the scene behind it, thin walls +
+    // high ior + clearcoat give bright fresnel rim highlights off the env
     const glass = new THREE.MeshPhysicalMaterial({
-      color: '#D8DFDE',
+      color: '#F6F9F9',
       transparent: true,
-      opacity: 0.16,
-      roughness: 0.06,
+      opacity: 1,
+      transmission: 1,
+      thickness: 0.4,
+      ior: 1.5,
+      roughness: 0.02,
       metalness: 0,
       clearcoat: 1,
-      clearcoatRoughness: 0.08,
-      envMapIntensity: 1.4,
+      clearcoatRoughness: 0.04,
+      reflectivity: 0.6,
+      envMapIntensity: 2.6,
       side: THREE.DoubleSide,
       depthWrite: false,
     })
-    // translucent golden apéritif — light passes through it (transmission),
-    // tinted on the way (attenuation), warmed faintly from within (emissive)
+    // translucent golden apéritif — high transmission makes it read as real,
+    // watery liquid you can see light through (not an opaque "milkshake"),
+    // deepened with depth by attenuation and lifted by a faint inner warmth
+    // Clear water with only a hint of yellow — fully transmissive (water's
+    // ior 1.33), barely tinted. It reads as "basically water": you see through
+    // it to the scene, its presence given by the bright surface meniscus and
+    // the faint yellow it picks up with depth, not by any opaque body.
     const liquid = new THREE.MeshPhysicalMaterial({
-      color: '#F6C468',
+      color: '#FBF4C6',
       transparent: true,
-      opacity: 0.97,
-      transmission: 0.52,
-      thickness: 0.85,
-      ior: 1.34,
-      attenuationColor: '#B06A12',
-      attenuationDistance: 0.9,
-      roughness: 0.1,
+      opacity: 1,
+      transmission: 1,
+      thickness: 0.55,
+      ior: 1.33,
+      attenuationColor: '#EFE28A',
+      attenuationDistance: 1.5,
+      roughness: 0.03,
       metalness: 0,
-      clearcoat: 0.35,
-      clearcoatRoughness: 0.15,
-      emissive: '#7A4A10',
-      emissiveIntensity: 0.68,
+      clearcoat: 0.4,
+      clearcoatRoughness: 0.12,
       depthWrite: false,
     })
     // wet highlight where the liquid meets the glass wall
@@ -197,11 +206,13 @@ export default function Scene({ onReady }) {
     })
     // pour stream: translucent water-gold body with scrolling broken
     // filaments (alphaMap) so it reads as moving liquid, not a solid rod
+    // poured jet: near-clear water with a faint yellow cast and a wet sheen,
+    // broken filaments scrolling along it so it reads as moving water
     const stream = new THREE.MeshStandardMaterial({
-      color: '#F7CE7B',
-      emissive: '#8A5514',
-      emissiveIntensity: 0.7,
-      roughness: 0.16,
+      color: '#F3EDC6',
+      emissive: '#4E4A22',
+      emissiveIntensity: 0.22,
+      roughness: 0.08,
       metalness: 0,
       transparent: true,
       opacity: 0,
@@ -211,7 +222,7 @@ export default function Scene({ onReady }) {
     })
     // bright glassy core inside the stream
     const streamCore = new THREE.MeshBasicMaterial({
-      color: '#FFE2A6',
+      color: '#FDF7DE',
       transparent: true,
       opacity: 0,
       blending: THREE.AdditiveBlending,
@@ -219,12 +230,12 @@ export default function Scene({ onReady }) {
     })
     // droplets kicked up where the stream hits the surface
     const splash = new THREE.MeshStandardMaterial({
-      color: '#F8D488',
-      emissive: '#A96E1C',
-      emissiveIntensity: 0.5,
-      roughness: 0.2,
+      color: '#F4EFCE',
+      emissive: '#4E4A22',
+      emissiveIntensity: 0.25,
+      roughness: 0.12,
       transparent: true,
-      opacity: 0.75,
+      opacity: 0.7,
       depthWrite: false,
     })
     const marble = new THREE.MeshStandardMaterial({
@@ -252,10 +263,10 @@ export default function Scene({ onReady }) {
   // material -> base opacity for the glass assembly
   const glassMats = useMemo(
     () => [
-      [mats.glass, 0.16],
+      [mats.glass, 1],
       [mats.sugar, 1],
       [mats.lemon, 1],
-      [mats.liquid, 0.97],
+      [mats.liquid, 1],
     ],
     [mats]
   )
@@ -336,9 +347,11 @@ export default function Scene({ onReady }) {
     const t = state.clock.elapsedTime
 
     // damped scroll progress — everything below is a pure function of p
+    // lower damping rate → a longer, smoother glide toward the scroll target,
+    // so the choreography eases rather than snapping to each new position
     cur.current = heroScroll.forced
       ? heroScroll.p
-      : THREE.MathUtils.damp(cur.current, heroScroll.p, 6, dt)
+      : THREE.MathUtils.damp(cur.current, heroScroll.p, 4.2, dt)
     const p = cur.current
 
     const t1 = easeIO(nrm(p, B0, B1))
@@ -399,7 +412,7 @@ export default function Scene({ onReady }) {
         M.visible = fill > 0.03
         M.position.y = GLASS.APEX_Y + GLASS.LIQ_H * fill
         M.scale.setScalar(Math.max(fill, 0.001))
-        mats.meniscus.opacity = 0.36 * glassT * ss(fill, 0.03, 0.16)
+        mats.meniscus.opacity = 0.55 * glassT * ss(fill, 0.03, 0.16)
       }
       // rising bubbles once there's liquid to rise through
       if (bubblesRef.current) {
@@ -445,7 +458,7 @@ export default function Scene({ onReady }) {
         streamCurve.v1.copy(_v3)
         streamCurve.v2.copy(_v2)
         // thin dribble at the start/end of the pour, full jet mid-pour
-        const baseR = 0.054 * (0.3 + 0.7 * pourK)
+        const baseR = 0.045 * (0.3 + 0.7 * pourK)
         updateStreamGeometry(streamGeo, streamCurve, baseR, baseR * 0.55, t, 0.09)
         updateStreamGeometry(streamCoreGeo, streamCurve, baseR * 0.45, baseR * 0.2, t, 0.15)
         tex.stream.offset.y -= dt * 1.9 // filaments flow downstream
@@ -601,9 +614,9 @@ export default function Scene({ onReady }) {
       <instancedMesh ref={dropsRef} args={[undefined, undefined, 22]} frustumCulled={false} renderOrder={1}>
         <sphereGeometry args={[0.018, 8, 8]} />
         <meshStandardMaterial
-          color="#F7CE7B"
-          emissive="#9A5E14"
-          emissiveIntensity={0.5}
+          color="#F2ECC6"
+          emissive="#4E4A22"
+          emissiveIntensity={0.25}
           transparent
           opacity={0.7}
           depthWrite={false}

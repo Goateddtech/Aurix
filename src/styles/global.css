@@ -11,8 +11,14 @@
   --ivory: #f5f1ea;
   --taupe: #9a948c;
   --hairline: rgba(192, 133, 82, 0.22);
-  --serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
-  --sans: 'Jost', 'Segoe UI', system-ui, sans-serif;
+  /* Apple fonts everywhere. Both display (--serif) and UI (--sans) now resolve
+     to the Apple/SF stack; only the product's own label keeps its type, and
+     that lives in inline SVG/canvas literals ('Cormorant Garamond'/'Jost'),
+     so it is untouched by these variables. */
+  --font-apple: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
+    'Inter', 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --serif: var(--font-apple);
+  --sans: var(--font-apple);
 }
 
 * {
@@ -22,11 +28,15 @@
 }
 
 html {
+  /* dark base under everything — prevents any flash before the lit canvas
+     paints, and is the true backdrop the transparent body reveals */
+  background: var(--bg);
   scroll-behavior: smooth;
 }
 
 body {
-  background: var(--bg);
+  /* transparent so the fixed <LiquidGlass/> canvas becomes the page backdrop */
+  background: transparent;
   color: var(--taupe);
   font-family: var(--sans);
   font-weight: 300;
@@ -69,6 +79,33 @@ sup {
   color: var(--copper);
 }
 
+/* ---------- lit background layer ---------- */
+
+/* Fixed full-screen R3F shader canvas that becomes the page backdrop.
+   pointer-events:none + aria-hidden → never blocks clicks, paint, or a11y.
+   The gradient is the still, softly-lit no-WebGL / pre-init fallback. */
+.liquid-glass {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 90% at 50% 10%, rgba(242, 177, 77, 0.06), transparent 55%),
+    radial-gradient(90% 75% at 80% 85%, rgba(192, 133, 82, 0.05), transparent 60%),
+    var(--bg);
+}
+
+.liquid-glass canvas {
+  display: block;
+}
+
+/* content rides above the backdrop (canvas z-index:0 → content z-index:1) */
+main,
+.footer {
+  position: relative;
+  z-index: 1;
+}
+
 /* ---------- type ---------- */
 
 h1,
@@ -77,12 +114,14 @@ h3 {
   font-family: var(--serif);
   color: var(--ivory);
   font-weight: 600;
-  line-height: 1.12;
+  line-height: 1.1;
+  /* Apple display type wants tight tracking, not the serif's open spacing */
+  letter-spacing: -0.022em;
 }
 
 h1 {
   font-size: clamp(3rem, 7.5vw, 5.6rem);
-  letter-spacing: 0.01em;
+  letter-spacing: -0.03em;
 }
 
 h2 {
@@ -305,7 +344,9 @@ section[id] {
 
 .hero-track {
   position: relative;
-  height: 320vh;
+  /* longer track → the same choreography unspools over more scroll, so the
+     tumbles read slow & deliberate instead of rushing past in one flick */
+  height: 600vh;
 }
 
 .hero-stage {
@@ -375,6 +416,28 @@ section[id] {
 
 .hero-panel-a h1 {
   font-size: clamp(2.3rem, 4.6vw, 4rem);
+}
+
+/* SVG filter def carrier — occupies no space, paints nothing */
+.hero-warp-def {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* headline reads through the liquid glass; scale is 0 at rest (crisp) and only
+   rises with scroll velocity (see HeroInteractive) */
+.hero-h1-warp {
+  filter: url(#hero-liquid-warp);
+  will-change: filter;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-h1-warp {
+    filter: none;
+  }
 }
 
 .hero-panel-a .kicker {
@@ -561,6 +624,16 @@ section[id] {
   grid-template-columns: repeat(3, 1fr);
   gap: 3rem;
   margin-top: 1rem;
+}
+
+/* ingredient reveal folded into the drink section */
+.drink-truths {
+  margin-top: 6.5rem;
+  scroll-margin-top: 84px;
+}
+
+.drink-truths-lead {
+  margin-bottom: 2.6rem;
 }
 
 .step {
@@ -1338,6 +1411,72 @@ section[id] {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='0.7'/%3E%3C/svg%3E");
 }
 
+/* ---------- surface light (fresnel edges + restrained bloom) ----------
+   Warm edge-light so panels, cards, pills & buttons catch the moving studio
+   light. box-shadow / gradient only → zero layout impact, brand hues only.
+   The product (3D can, SVG can, hero imagery) is deliberately untouched. */
+
+.btn {
+  box-shadow: inset 0 1px 0 rgba(255, 236, 200, 0.1);
+}
+.btn:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 200, 0.14),
+    0 8px 26px rgba(242, 177, 77, 0.16);
+}
+.btn-solid {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 246, 224, 0.4),
+    0 6px 20px rgba(242, 177, 77, 0.12);
+}
+.btn-solid:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 246, 224, 0.55),
+    0 10px 30px rgba(242, 177, 77, 0.22);
+}
+
+.tcard-face {
+  box-shadow: inset 0 1px 0 rgba(255, 236, 200, 0.06);
+}
+.tcard-back {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 200, 0.12),
+    0 0 34px rgba(192, 133, 82, 0.07);
+}
+
+.quote,
+.recipe {
+  box-shadow: inset 0 1px 0 rgba(255, 236, 200, 0.06);
+}
+
+.stat {
+  box-shadow: inset 0 1px 0 rgba(255, 236, 200, 0.04);
+}
+
+.section-marble {
+  box-shadow: inset 0 1px 0 rgba(255, 236, 200, 0.05);
+}
+
+.spec-chips li {
+  box-shadow: inset 0 1px 0 rgba(255, 236, 200, 0.07);
+  transition:
+    box-shadow 0.35s ease,
+    border-color 0.35s ease,
+    color 0.35s ease;
+}
+.spec-chips li:hover {
+  border-color: rgba(192, 133, 82, 0.55);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 200, 0.12),
+    0 4px 18px rgba(242, 177, 77, 0.12);
+}
+
+.capture input:focus {
+  box-shadow:
+    0 0 0 1px rgba(242, 177, 77, 0.35),
+    0 0 22px rgba(242, 177, 77, 0.1);
+}
+
 /* ---------- responsive ---------- */
 
 @media (max-width: 960px) {
@@ -1364,7 +1503,7 @@ section[id] {
 
 @media (max-width: 640px) {
   .hero-track {
-    height: 260vh;
+    height: 460vh;
   }
   .section {
     padding: 5.5rem 1.25rem;

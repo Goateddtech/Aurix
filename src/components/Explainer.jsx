@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import Botanicals from './Botanicals'
 import { useParallax } from '../lib/useParallax'
 
@@ -20,6 +20,59 @@ const STEPS = [
   },
 ]
 
+const CARDS = [
+  {
+    myth: 'Artificial sweeteners',
+    truth: 'Real elderflower & citrus',
+    detail: 'Steeped whole, pressed once. Nothing reconstituted, nothing “nature-identical.”',
+  },
+  {
+    myth: 'Synthetic collagen filler',
+    truth: 'Marine collagen + vitamin C',
+    detail: 'Hydrolyzed for absorption, paired with vitamin C — the way collagen actually works.',
+  },
+  {
+    myth: 'Loud, one-note energy',
+    truth: 'Jalapeño, considered',
+    detail: 'A low, warm heat that opens the palate. A kick you notice — not a dare.',
+  },
+  {
+    myth: 'Sugar-bomb formulas',
+    truth: '2.4 g sugar per can†',
+    detail: 'Sweetness from the botanicals themselves, not the syrup tank.',
+  },
+]
+
+function Card({ card, index }) {
+  const [flipped, setFlipped] = useState(false)
+  return (
+    <button
+      type="button"
+      className={`tcard${flipped ? ' flipped' : ''}`}
+      onClick={() => setFlipped((f) => !f)}
+      data-reveal
+      style={{ transitionDelay: `${index * 100}ms` }}
+      aria-label={`${card.myth} — flip to reveal: ${card.truth}`}
+    >
+      <span className="tcard-inner">
+        <span className="tcard-face tcard-front">
+          <em className="mark mark-x">✕</em>
+          <strong>{card.myth}</strong>
+          <small>the usual way</small>
+        </span>
+        <span className="tcard-face tcard-back">
+          <em className="mark mark-check">✓</em>
+          <strong>{card.truth}</strong>
+          <small>{card.detail}</small>
+        </span>
+      </span>
+    </button>
+  )
+}
+
+// The single "drink" section: what Considered Indulgence means, then the
+// ingredient reveal ("leave the noise on the shelf") folded in beneath it —
+// one clean block instead of two stacked sections plus the can story.
 export default function Explainer() {
   const rootRef = useRef(null)
   useParallax(rootRef)
@@ -42,6 +95,18 @@ export default function Explainer() {
               <p>{s.body}</p>
             </article>
           ))}
+        </div>
+
+        <div id="ingredients" className="drink-truths">
+          <p className="section-intro drink-truths-lead" data-reveal>
+            Leave the noise on the shelf — hover or tap to see what’s actually
+            inside.
+          </p>
+          <div className="tcards">
+            {CARDS.map((c, i) => (
+              <Card card={c} index={i} key={c.myth} />
+            ))}
+          </div>
         </div>
       </div>
     </section>

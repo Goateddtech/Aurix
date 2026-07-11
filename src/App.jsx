@@ -1,9 +1,8 @@
+import LiquidGlass from './components/LiquidGlass'
 import Nav from './components/Nav'
 import HeroSequence from './components/HeroSequence'
 import Marquee from './components/Marquee'
 import Explainer from './components/Explainer'
-import TruthCards from './components/TruthCards'
-import CanStory from './components/CanStory'
 import Nutrition from './components/Nutrition'
 import CanFloat from './components/CanFloat'
 import WaveDivider from './components/WaveDivider'
@@ -22,13 +21,12 @@ export default function App() {
     new URLSearchParams(window.location.search).has('nohero')
   return (
     <>
+      <LiquidGlass />
       <Nav />
       <main>
         {!noHero && <HeroSequence />}
         <Marquee />
         <Explainer />
-        <TruthCards />
-        <CanStory />
         <Nutrition />
         <CanFloat />
         <SocialProof />

@@ -1,6 +1,7 @@
 import React, { Suspense, useEffect, useRef, useState } from 'react'
 import { heroScroll, clamp01, band } from '../lib/scrollState'
 import { usePrefersReducedMotion } from '../lib/useReveal'
+import { useScrollVelocity } from '../hooks/useScrollVelocity'
 
 // three.js + the scene load as their own chunk; the blurred still frame
 // covers the stage until the first rendered frame.
@@ -56,8 +57,28 @@ function HeroInteractive() {
   const pc = useRef(null)
   const pd = useRef(null)
   const cue = useRef(null)
+  const disp = useRef(null)
   const [ready, setReady] = useState(false)
   const [glFailed, setGlFailed] = useState(false)
+  const scroll = useScrollVelocity()
+
+  // Headline refraction: the hero H1 reads through the same "liquid glass" as
+  // the backdrop — crisp at rest (displacement scale 0), warping only while
+  // scrolling. This branch only mounts when motion is allowed (reduced motion
+  // renders <StaticHero/> instead), so no extra guard is needed.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search)
+    const forcedV = q.has('gv') ? clamp01(parseFloat(q.get('gv')) || 0) : null
+    const MAX = 13 // px of displacement at full scroll speed — legible liquid, not melt
+    let raf = 0
+    const loop = () => {
+      const v = forcedV != null ? forcedV : scroll.current.velocity
+      if (disp.current) disp.current.setAttribute('scale', (v * MAX).toFixed(2))
+      raf = requestAnimationFrame(loop)
+    }
+    raf = requestAnimationFrame(loop)
+    return () => cancelAnimationFrame(raf)
+  }, [])
 
   useEffect(() => {
     const apply = (el, o, y = 22) => {
@@ -102,6 +123,34 @@ function HeroInteractive() {
 
   return (
     <header className="hero-track" ref={trackRef} id="top">
+      {/* liquid-glass displacement filter for the hero headline (scale driven
+          by scroll velocity above; 0 at rest → text stays crisp) */}
+      <svg className="hero-warp-def" width="0" height="0" aria-hidden="true" focusable="false">
+        <filter
+          id="hero-liquid-warp"
+          x="-20%"
+          y="-20%"
+          width="140%"
+          height="140%"
+          colorInterpolationFilters="sRGB"
+        >
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.009 0.016"
+            numOctaves="2"
+            seed="4"
+            result="warp"
+          />
+          <feDisplacementMap
+            ref={disp}
+            in="SourceGraphic"
+            in2="warp"
+            scale="0"
+            xChannelSelector="R"
+            yChannelSelector="G"
+          />
+        </filter>
+      </svg>
       <div className="hero-stage">
         <div
           className={`hero-backdrop${ready && !glFailed ? ' is-hidden' : ''}${
@@ -123,7 +172,7 @@ function HeroInteractive() {
         {/* Stage A — idle hero (title sits above the product, never over it) */}
         <div className="hero-panel hero-panel-a" ref={pa}>
           <p className="kicker">Elderflower · Jalapeño · Citrus</p>
-          <h1>Considered Indulgence.</h1>
+          <h1 className="hero-h1-warp">Considered Indulgence.</h1>
           <p className="sub">
             Marine collagen and vitamin C, in a can built to be looked at twice.
           </p>
