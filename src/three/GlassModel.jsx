@@ -11,7 +11,7 @@ export const GLASS = {
   RIM_R: 0.95,
 }
 
-export function GlassModel({ mats, groupRef, liquidRef, bubblesRef }) {
+export function GlassModel({ mats, groupRef, liquidRef, meniscusRef, bubblesRef }) {
   const liquidGeo = useMemo(() => {
     const g = new THREE.CylinderGeometry(0.84, 0.02, GLASS.LIQ_H, 48)
     // move the apex to the origin so scaling == filling a conical bowl
@@ -42,10 +42,21 @@ export function GlassModel({ mats, groupRef, liquidRef, bubblesRef }) {
         material={mats.liquid}
         renderOrder={2}
       />
+      {/* wet highlight where the liquid meets the glass wall */}
+      <mesh
+        ref={meniscusRef}
+        visible={false}
+        position={[0, GLASS.APEX_Y, 0]}
+        rotation={[Math.PI / 2, 0, 0]}
+        material={mats.meniscus}
+        renderOrder={3}
+      >
+        <torusGeometry args={[0.84, 0.014, 8, 64]} />
+      </mesh>
       {/* rising bubbles */}
       <instancedMesh
         ref={bubblesRef}
-        args={[undefined, undefined, 16]}
+        args={[undefined, undefined, 24]}
         frustumCulled={false}
         renderOrder={2}
       >

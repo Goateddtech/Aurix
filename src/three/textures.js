@@ -345,6 +345,54 @@ export function createLemonTexture() {
   return tex
 }
 
+// Vertical streak pattern for the pour stream's alphaMap (green channel).
+// Mid-gray base keeps the stream translucent; brighter broken filaments
+// scroll along it to read as moving water rather than a solid rod.
+export function createStreamTexture() {
+  const W = 128
+  const H = 256
+  const canvas = document.createElement('canvas')
+  canvas.width = W
+  canvas.height = H
+  const ctx = canvas.getContext('2d')
+  ctx.fillStyle = 'rgb(182,182,182)'
+  ctx.fillRect(0, 0, W, H)
+  // broken bright filaments — varying length so motion is visible
+  for (let i = 0; i < 26; i++) {
+    const x = Math.random() * W
+    const w = 2 + Math.random() * 5
+    let y = Math.random() * H
+    while (y < H + 40) {
+      const len = 18 + Math.random() * 60
+      const a = 0.25 + Math.random() * 0.5
+      const g = ctx.createLinearGradient(0, y, 0, y + len)
+      g.addColorStop(0, 'rgba(255,255,255,0)')
+      g.addColorStop(0.5, `rgba(255,255,255,${a.toFixed(2)})`)
+      g.addColorStop(1, 'rgba(255,255,255,0)')
+      ctx.fillStyle = g
+      ctx.fillRect(x - w / 2, y, w, len)
+      y += len + 20 + Math.random() * 70
+    }
+  }
+  // a few darker gaps for sparkle contrast
+  for (let i = 0; i < 12; i++) {
+    const x = Math.random() * W
+    const y = Math.random() * H
+    const g = ctx.createRadialGradient(x, y, 0, x, y, 10 + Math.random() * 16)
+    g.addColorStop(0, 'rgba(60,60,60,0.55)')
+    g.addColorStop(1, 'rgba(60,60,60,0)')
+    ctx.fillStyle = g
+    ctx.beginPath()
+    ctx.arc(x, y, 26, 0, Math.PI * 2)
+    ctx.fill()
+  }
+  const tex = new THREE.CanvasTexture(canvas)
+  tex.wrapS = THREE.RepeatWrapping
+  tex.wrapT = THREE.RepeatWrapping
+  tex.repeat.set(2, 1.2)
+  return tex
+}
+
 // Soft radial glow used for bokeh sprites.
 export function createGlowTexture() {
   const S = 128

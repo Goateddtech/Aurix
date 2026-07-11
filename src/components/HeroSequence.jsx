@@ -120,16 +120,16 @@ function HeroInteractive() {
         )}
         <div className="hero-vignette" />
 
-        {/* Stage A — idle hero */}
+        {/* Stage A — idle hero (title sits above the product, never over it) */}
         <div className="hero-panel hero-panel-a" ref={pa}>
           <p className="kicker">Elderflower · Jalapeño · Citrus</p>
           <h1>Considered Indulgence.</h1>
           <p className="sub">
             Marine collagen and vitamin C, in a can built to be looked at twice.
           </p>
-          <div ref={cue}>
-            <ScrollCue />
-          </div>
+        </div>
+        <div className="hero-cue" ref={cue}>
+          <ScrollCue />
         </div>
 
         {/* Stage B — after tumble #1 */}

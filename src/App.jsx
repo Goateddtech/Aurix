@@ -5,6 +5,8 @@ import Explainer from './components/Explainer'
 import TruthCards from './components/TruthCards'
 import CanStory from './components/CanStory'
 import Nutrition from './components/Nutrition'
+import CanFloat from './components/CanFloat'
+import WaveDivider from './components/WaveDivider'
 import SocialProof from './components/SocialProof'
 import Ritual from './components/Ritual'
 import FAQ from './components/FAQ'
@@ -28,10 +30,12 @@ export default function App() {
         <TruthCards />
         <CanStory />
         <Nutrition />
+        <CanFloat />
         <SocialProof />
         <Ritual />
         <FAQ />
         <Stockists />
+        <WaveDivider />
       </main>
       <Footer />
       <div className="grain" aria-hidden="true" />

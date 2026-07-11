@@ -1,3 +1,7 @@
+import { useRef } from 'react'
+import Botanicals from './Botanicals'
+import { useParallax } from '../lib/useParallax'
+
 const STEPS = [
   {
     n: '01',
@@ -17,8 +21,11 @@ const STEPS = [
 ]
 
 export default function Explainer() {
+  const rootRef = useRef(null)
+  useParallax(rootRef)
   return (
-    <section className="section" id="drink">
+    <section className="section" id="drink" ref={rootRef}>
+      <Botanicals />
       <div className="wrap">
         <p className="kicker" data-reveal>
           The Drink
